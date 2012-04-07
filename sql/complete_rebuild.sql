@@ -1,15 +1,16 @@
--- DROPPING THINGS - LOTS OF ERRORS, AHOY
-drop function upper_protocol;
-drop trigger upper_protocol;
-
-drop table hosts;
-drop table ports;
+drop function upper_protocol_f();
+drop trigger upper_protocol_t on ports;
 
 drop table port_details;
-drop table host_details;
+drop table ports;
+drop table port_detail_types;
 
-drop table port_detail_type;
-drop table host_detail_type;
+drop table host_details;
+drop table hosts;
+drop table host_detail_types;
+
+
+
 
 
 
@@ -31,8 +32,8 @@ create table hosts (
 -- Detailed, unstructured information about a host - we need to create this last, otherwise its FKs don't exist :)
 create table host_details (
  id BIGSERIAL PRIMARY KEY,
- host_id REFERENCES hosts(id) ON DELETE CASCADE NOT NULL,
- type REFERENCES host_detail_type(id) NOT NULL ON DELETE CASCADE,
+ host_id bigint REFERENCES hosts(id) ON DELETE CASCADE NOT NULL,
+ type bigint REFERENCES host_detail_types(id) ON DELETE CASCADE NOT NULL,
  text TEXT NOT NULL -- TEXT = "unlimited" length
 );
 
@@ -48,23 +49,23 @@ create table port_detail_types (
 -- Ports table - this needs to be created last, otherwise the FKs don't exist
 create table ports (
  id BIGSERIAL PRIMARY KEY,
- host_id REFERENCES hosts(id) ON DELETE CASCADE NOT NULL,
- port NUMBER(8),
+ host_id bigint REFERENCES hosts(id) ON DELETE CASCADE NOT NULL,
+ port NUMERIC(8),
  transport_protocol varchar(8)
 );
 
 -- Ports table details - SSL? Service Version?
 create table port_details (
  id BIGSERIAL PRIMARY KEY,
- port_id REFERENCES ports(id) ON DELETE CASCASE NOT NULL,
- type REFERENCES port_detail_types(id) ON DELETE CASCADE NOT NULL,
+ port_id bigint REFERENCES ports(id) ON DELETE CASCADE NOT NULL,
+ type bigint REFERENCES port_detail_types(id) ON DELETE CASCADE NOT NULL,
  text TEXT NOT NULL -- TEXT = "unlimited" length text
 );
 
 
 -- FUNCTIONS AND TRIGGERS
 -- Function to force uppercasing of protocols...
-create function upper_protocol() returns trigger as '
+create function upper_protocol_f() returns trigger as '
  begin
  NEW.transport_protocol := upper(NEW.transport_protocol);
  return NEW;
@@ -72,7 +73,7 @@ create function upper_protocol() returns trigger as '
 ' language 'plpgsql';
 
 -- ...and its corrosponding trigger
-create trigger upper_protocol
+create trigger upper_protocol_t
  after insert on ports
  for each row execute procedure upper_protocol();
 
