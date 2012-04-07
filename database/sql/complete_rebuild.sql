@@ -68,6 +68,6 @@ create function upper_protocol_f() returns trigger as '
 
 -- ...and its corrosponding trigger
 create trigger upper_protocol_t
- after insert on ports
+ before insert on ports
  for each row execute procedure upper_protocol_f();
 
