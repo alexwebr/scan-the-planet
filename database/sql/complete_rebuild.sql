@@ -20,14 +20,15 @@ create table host_detail_types (
 
 -- Hosts table - IP address and last-seen date (should maybe be in details?)
 create table hosts (
- ip INET PRIMARY KEY, -- INET holds network and host IPv6 and IPv4 addresses
+ id BIGSERIAL PRIMARY KEY,
+ ip INET UNIQUE NOT NULL, -- INET holds network and host IPv6 and IPv4 addresses
  last_seen DATE 
 );
 
 -- Detailed, unstructured information about a host - we need to create this last, otherwise its FKs don't exist :)
 create table host_details (
  id BIGSERIAL PRIMARY KEY,
- host_id INET REFERENCES hosts(ip) ON DELETE CASCADE NOT NULL,
+ host_id BIGINT REFERENCES hosts(id) ON DELETE CASCADE NOT NULL,
  type bigint REFERENCES host_detail_types(id) ON DELETE CASCADE NOT NULL, text TEXT NOT NULL -- TEXT = "unlimited" length);
 );
 
@@ -42,7 +43,7 @@ create table port_detail_types (
 -- Ports table - this needs to be created last, otherwise the FKs don't exist
 create table ports (
  id BIGSERIAL PRIMARY KEY,
- host_id INET REFERENCES hosts(ip) ON DELETE CASCADE NOT NULL,
+ host_id BIGINT REFERENCES hosts(id) ON DELETE CASCADE NOT NULL,
  port NUMERIC(8),
  transport_protocol varchar(8)
 );
